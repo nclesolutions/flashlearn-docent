@@ -1,5 +1,5 @@
 <link rel="icon" href="{{ asset('auth/img/favicon.png') }}" type="image/png" sizes="16x16">
-<title>FlashLearn - Dé Innovatieve Digitale Leeromgeving voor Scholen en Individuele Gebruikers</title>
+<title>Docenten-omgeving | FlashLearn</title>
 
 <meta name="description" content="Ontdek FlashLearn, dé innovatieve leeromgeving voor scholen en individuele gebruikers. Beheer cijfers, huiswerk en meer met krachtige tools. Gamification maakt leren boeiend, interactief en efficiënt. Start nu met FlashLearn en ervaar leren zoals nooit tevoren!">
 <meta name="keywords" content="FlashLearn, digitale leeromgeving, cijfers beheren, huiswerk, gamification, interactief leren, educatieve software, onderwijs, studenten, scholieren, gamified leren, scholen, leren leuk maken, digitale educatie">
@@ -20,4 +20,4 @@
 <meta name="twitter:image" content="{{ asset('auth/img/favicon.png') }}">
 
 <!-- Canonical URL -->
-<link rel="canonical" href="https://www.flashlearn.nl">
+<link rel="canonical" href="https://docent.flashlearn.nl">

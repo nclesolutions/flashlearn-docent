@@ -13,7 +13,7 @@ class FetchSchool
 
         if ($user) {
             // Query om te controleren of de gebruiker een student is en bij een school hoort
-            $membership = DB::table('students')
+            $membership = DB::table('teachers')
                 ->where('user_id', $user->id)
                 ->first();
 

@@ -1,20 +1,20 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use App\Models\Homework;
-use App\Models\Assignment;
 use App\Models\Schedule;
-use App\Models\Grade;
 use App\Models\Teacher;
 use App\Models\Student;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Zorg ervoor dat de gebruiker is geauthenticeerd
+        // Controleer of de gebruiker is ingelogd
         if (!Auth::check()) {
             return redirect()->route('login');
         }
@@ -22,127 +22,75 @@ class DashboardController extends Controller
         // Haal het ID van de huidige geauthenticeerde gebruiker op
         $userId = Auth::id();
 
-        // Haal de studentgegevens van de ingelogde gebruiker op
-        $student = Student::where('user_id', $userId)->first();
+        // Haal de docentgegevens van de ingelogde gebruiker op
+        $teacher = Teacher::where('user_id', $userId)->first();
 
-        // Tel het aantal huiswerkopdrachten voor de gebruiker
-        $huiswerkCount = Homework::where('user_id', $userId)->count();
+        if (!$teacher) {
+            return redirect()->route('dashboard')->withErrors('Docent niet gevonden.');
+        }
 
-        // Tel het aantal werkstukken voor de gebruiker
-        $werkstukCount = Assignment::where('user_id', $userId)->count();
+        $orgId = $teacher->org_id;
+        $schedules = Schedule::where('school_id', $orgId)->get(); // Haal alleen roosters op voor de school van de docent
 
-        // Haal de werkstukken van de gebruiker op
-        $werkstukken = Assignment::where('user_id', $userId)->get();
+        $filteredLessons = [];
 
-        // Haal de laatste 3 cijfers op voor de gebruiker
-        $cijfers = Grade::select('grades.subject_id', 'grades.grade', 'subjects.name', 'grades.part', 'grades.date_created')
-            ->join('subjects', 'grades.subject_id', '=', 'subjects.id')
-            ->where('grades.user_id', $userId)
-            ->orderBy('grades.date_created', 'desc')
-            ->limit(3)
-            ->get();
+        foreach ($schedules as $schedule) {
+            // Haal de class_id op uit de Schedule-tabel
+            $className = \DB::table('classes')->where('id', $schedule->class_id)->value('name');
 
-        // Haal het weeknummer uit het verzoek op, of gebruik de huidige week
-        $weekNumber = $request->query('week', date('W'));
-
-        // Haal het rooster op voor de huidige week
-        $schedule = Schedule::where('class_id', $student->class_id)->first();
-
-        if ($schedule) {
+            // Decodeer de JSON-data in een array
             $roosters = json_decode($schedule->data, true);
-            $currentWeekRooster = collect($roosters['weeks'])->firstWhere('week_number', $weekNumber);
 
-            if ($currentWeekRooster) {
-                // Vervang de 'teacher' ID door de bijbehorende naam uit de teachers tabel
-                foreach ($currentWeekRooster['days'] as &$day) {
-                    foreach ($day['schedule'] as &$lesson) {
-                        $teacher = Teacher::with('user')->find($lesson['teacher']);
-                        if ($teacher && $teacher->user) {
+            // Doorzoek alle weken in het rooster
+            foreach ($roosters['weeks'] as $week) {
+                foreach ($week['days'] as $day) {
+                    foreach ($day['schedule'] as $lesson) {
+                        if ($lesson['teacher'] == $teacher->id) {
+                            // Voeg class_id toe aan de lesdata
+                            $lesson['class'] = $className;
+
+                            // Vervang de 'teacher' ID door de bijbehorende naam
                             $lesson['teacher'] = strtoupper(substr($teacher->user->firstname, 0, 1)) . '. ' . $teacher->user->lastname;
+
+                            // Groepeer de lessen op basis van tijd, lokaal, docent en klas
+                            $key = $lesson['time'] . '-' . $lesson['location'] . '-' . $lesson['teacher'];
+                            if (!isset($filteredLessons[$week['week_number']][$day['day_of_week']][$key])) {
+                                $filteredLessons[$week['week_number']][$day['day_of_week']][$key] = [
+                                    'time' => $lesson['time'],
+                                    'lesson' => [],
+                                    'location' => $lesson['location'],
+                                    'teacher' => $lesson['teacher'],
+                                    'classes' => [],
+                                    'students' => []
+                                ];
+                            }
+
+                            // Voeg de les toe aan de lijst als deze nog niet bestaat
+                            if (!in_array($lesson['lesson'], $filteredLessons[$week['week_number']][$day['day_of_week']][$key]['lesson'])) {
+                                $filteredLessons[$week['week_number']][$day['day_of_week']][$key]['lesson'][] = $lesson['lesson'];
+                            }
+
+                            // Voeg de klas toe aan de lijst als deze nog niet bestaat
+                            if (!in_array($lesson['class'], $filteredLessons[$week['week_number']][$day['day_of_week']][$key]['classes'])) {
+                                $filteredLessons[$week['week_number']][$day['day_of_week']][$key]['classes'][] = $lesson['class'];
+                            }
+
+                            // Haal de leerlingen op voor de klas
+                            $students = Student::where('class_id', $schedule->class_id)->pluck('user_id')->toArray();
+                            $studentNames = DB::table('users')
+                                ->whereIn('id', $students)
+                                ->get(['firstname', 'lastname'])
+                                ->map(function ($student) {
+                                    return $student->firstname . ' ' . $student->lastname;
+                                })
+                                ->toArray();
+                            $filteredLessons[$week['week_number']][$day['day_of_week']][$key]['students'] = array_merge($filteredLessons[$week['week_number']][$day['day_of_week']][$key]['students'], $studentNames);
                         }
                     }
                 }
             }
-
-            // Haal de volgende en vorige weken op
-            $weeks = $roosters['weeks'];
-            $currentWeekIndex = array_search($currentWeekRooster, $weeks);
-            $nextWeek = $weeks[$currentWeekIndex + 1] ?? null;
-            $prevWeek = $weeks[$currentWeekIndex - 1] ?? null;
-        } else {
-            $currentWeekRooster = ['days' => []];
-            $nextWeek = null;
-            $prevWeek = null;
-            $weeks = [];
         }
 
-        return view('dashboard.index', compact('huiswerkCount', 'cijfers', 'werkstukCount', 'currentWeekRooster', 'nextWeek', 'prevWeek', 'weeks', 'weekNumber', 'werkstukken'));
-    }
-
-    // API Endpoint: Haal dashboardgegevens op voor de ingelogde gebruiker
-    public function APIIndex(Request $request)
-    {
-        // Zorg ervoor dat de gebruiker is geauthenticeerd
-        $userId = Auth::id();
-
-        // Haal de studentgegevens van de ingelogde gebruiker op
-        $student = Student::where('user_id', $userId)->first();
-
-        // Tel het aantal huiswerkopdrachten voor de student
-        $huiswerkCount = Homework::where('user_id', $userId)->count();
-
-        // Tel het aantal werkstukken voor de student
-        $werkstukCount = Assignment::where('user_id', $userId)->count();
-
-        // Haal de werkstukken van de student op
-        $werkstukken = Assignment::where('user_id', $userId)->get();
-
-        // Haal de laatste 3 cijfers op voor de student
-        $cijfers = Grade::select('grades.subject_id', 'grades.grade', 'subjects.name as subject_name', 'grades.part', 'grades.created_at as date_created')
-            ->join('subjects', 'grades.subject_id', '=', 'subjects.id')
-            ->where('grades.user_id', $userId)
-            ->orderBy('grades.created_at', 'desc')
-            ->limit(3)
-            ->get();
-
-        // Haal het weeknummer uit het verzoek op, of gebruik de huidige week
-        $weekNumber = $request->query('week', date('W'));
-
-        // Haal het rooster op voor de huidige week
-        $schedule = Schedule::where('class_id', $student->class_id)->first();
-
-        if ($schedule) {
-            $roosters = json_decode($schedule->data, true);
-            $currentWeekRooster = collect($roosters['weeks'])->firstWhere('week_number', $weekNumber);
-
-            if ($currentWeekRooster) {
-                // Vervang de 'teacher' ID door de bijbehorende naam uit de teachers tabel
-                foreach ($currentWeekRooster['days'] as &$day) {
-                    foreach ($day['schedule'] as &$lesson) {
-                        $teacher = Teacher::with('user')->find($lesson['teacher']);
-                        if ($teacher && $teacher->user) {
-                            $lesson['teacher'] = strtoupper(substr($teacher->user->firstname, 0, 1)) . '. ' . $teacher->user->lastname;
-                        }
-                    }
-                }
-            }
-
-            // Haal de volgende en vorige weken op
-            $weeks = $roosters['weeks'];
-            $currentWeekIndex = array_search($currentWeekRooster, $weeks);
-            $nextWeek = $weeks[$currentWeekIndex + 1] ?? null;
-            $prevWeek = $weeks[$currentWeekIndex - 1] ?? null;
-        } else {
-            $currentWeekRooster = ['days' => []];
-            $nextWeek = null;
-            $prevWeek = null;
-            $weeks = [];
-        }
-
-        return response()->json([
-            'currentWeekRooster' => $currentWeekRooster,
-            'weeks' => $weeks,
-            'weekNumber' => $weekNumber,
-        ]);
+        return view('dashboard.index', compact('filteredLessons'));
     }
 }

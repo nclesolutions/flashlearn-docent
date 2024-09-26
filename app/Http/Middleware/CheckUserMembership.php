@@ -13,7 +13,7 @@ class CheckUserMembership
 
         if ($user) {
             // Query om te controleren of de gebruiker lid is van een school
-            $membership = DB::table('students')
+            $membership = DB::table('teachers')
                 ->where('user_id', $user->id)
                 ->first();
 

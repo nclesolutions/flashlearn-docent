@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\UserResource;
 use App\Mail\LoginNotification;
+use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -37,11 +38,14 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required'
         ]);
-
         // Attempt to find the user by email
         $user = User::where('email', $request->input('email'))->first();
 
         if ($user && Hash::check($request->input('password'), $user->password)) {
+            $teacher = Teacher::where('user_id', $user->id)->first();
+            if (!$teacher) {
+                return redirect()->back()->withErrors(['error' => 'Als leerling kan je niet inloggen op een applicatie voor docenten.']);
+            }
             // Check if the account is activated
             if (config('auth.account_activation') && $user->activation_code !== 'activated') {
                 return redirect()->back()->withErrors(['error' => 'Activeer je account om in te loggen!']);
@@ -73,63 +77,8 @@ class AuthController extends Controller
                 return redirect()->intended('/'); // this will redirect to the intended page or localhost/
             }
         }
-
         return redirect()->back()->withErrors(['error' => 'Je e-mailadres of wachtwoord is onjuist!']);
     }
-
-
-
-    // Show the registration form
-    public function showRegistrationForm()
-    {
-        if (Auth::check()) {
-            // Redirect to the home page if the user is already logged in
-            return redirect()->route('dashboard');
-        }
-
-        return view('auth.register');
-    }
-
-    // Handle the registration process
-    public function register(Request $request)
-    {
-        // Validate the input
-        $validator = Validator::make($request->all(), [
-            'firstname' => 'required|alpha_num|max:255',
-            'lastname' => 'required|alpha_num|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:5|max:20|confirmed',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        // Generate a username and activation code
-        $username = strtolower($request->input('firstname') . $request->input('lastname') . rand(1000, 9999));
-        $activation_code = config('auth.account_activation') ? hash('sha256', uniqid() . $request->input('email') . config('app.key')) : 'activated';
-
-        // Create the new user
-        $user = User::create([
-            'firstname' => $request->input('firstname'),
-            'lastname' => $request->input('lastname'),
-            'username' => $username,
-            'email' => $request->input('email'),
-            'password' => Hash::make($request->input('password')),
-            'activation_code' => $activation_code,
-            'registered' => now(),
-            'last_seen' => now(),
-            'approved' => config('auth.account_approval') ? 0 : 1,
-        ]);
-
-        $user->assignRole('Gebruiker');
-
-        // Send the email verification notification
-        $user->sendEmailVerificationNotification();
-
-        return redirect()->route('login')->with('success', 'Bekijk je e-mailadres om je account te activeren!');
-    }
-
 
     public function showForgotPasswordForm()
     {
@@ -208,52 +157,9 @@ class AuthController extends Controller
     {
         return view('auth.blocked');
     }
+
     public function showMaintenance()
     {
         return view('auth.maintenance');
     }
-
-
-    public function APILogin(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
-
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            // Fout afhandeling met een custom 'path' parameter
-            return response()->json([
-                'message' => 'The provided credentials are incorrect.',
-                'path' => '/error' // Hier kun je het pad aangeven waar de frontend naartoe moet navigeren
-            ], 401);
-        }
-
-        $user = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ]);
-    }
-
-    public function APIshow(Request $request)
-    {
-        $user = $request->user();
-
-        return response()->json([
-            'id' => $user->id,
-            'firstname' => $user->firstname,
-            'lastname' => $user->lastname,
-            'username' => $user->username,
-            'email' => $user->email,
-            'email_verified_at' => $user->email_verified_at,
-            'biography' => $user->biography,
-            'activation_code' => $user->activation_code,
-            'created_at' => $user->created_at,
-            'updated_at' => $user->updated_at,
-        ]);
-    }
-
 }
