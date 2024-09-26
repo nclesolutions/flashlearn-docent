@@ -21,60 +21,21 @@
                         </a>
                     </div>
                     @if(session('orgName'))
-                        <div class="{{ checkActivePage(['huiswerk', 'huiswerk/*']) }} menu-item menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
-                            <a class="menu-link" href="{{ url('/huiswerk') }}">
-                                <span class="menu-title">Huiswerk</span>
+                        <div class="{{ checkActivePage(['leerlingen', 'leerling/*']) }} menu-item menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
+                            <a class="menu-link" href="{{ url('/leerlingen') }}">
+                                <span class="menu-title">Leerlingen</span>
                                 <span class="menu-arrow d-lg-none"></span>
                             </a>
                         </div>
-                        <div class="{{ checkActivePage(['afwezigheid', 'afwezigheid/*']) }} menu-item menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
-                            <a class="menu-link" href="{{ url('/afwezigheid') }}">
-                                <span class="menu-title">Afwezigheid</span>
+                        <div class="{{ checkActivePage(['studiewijzers', 'studiewijzer/*']) }} menu-item menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
+                            <a class="menu-link" href="{{ url('/studiewijzers') }}">
+                                <span class="menu-title">Studiewijzers</span>
                                 <span class="menu-arrow d-lg-none"></span>
                             </a>
                         </div>
                         <div class="{{ checkActivePage(['cijfers', 'cijfers/*']) }} menu-item menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
                             <a class="menu-link" href="{{ url('/cijfers') }}">
                                 <span class="menu-title">Cijfers</span>
-                                <span class="menu-arrow d-lg-none"></span>
-                            </a>
-                        </div>
-                        <div class="{{ checkActivePage(['vakken', 'vak/*']) }} menu-item menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
-                            <a class="menu-link" href="{{ url('/vakken') }}">
-                                <span class="menu-title">Vakken</span>
-                                <span class="menu-arrow d-lg-none"></span>
-                            </a>
-                        </div>
-                    @endif
-                    @if (session('orgName'))
-                    <div data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="bottom-start" class=" {{ checkActivePage(['werkstuk', 'flashcards', 'flashcards/*', 'werkstuk/*']) }} menu-item menu-lg-down-accordion menu-sub-lg-down-indention me-0 me-lg-2">
-   <span class="menu-link">
-   <span class="menu-title">Educatie</span>
-   <span class="menu-arrow d-lg-none"></span>
-   </span>
-                        <div class="menu-sub menu-sub-lg-down-accordion menu-sub-lg-dropdown px-lg-2 py-lg-4 w-lg-200px">
-                            <div class="menu-item">
-                                <a class="menu-link" href="{{ url('/flashcards') }}">
-         <span class="menu-icon">
-         <i class="ki-outline ki-rocket fs-2"></i>
-         </span>
-                                    <span class="menu-title">Flitskaarten</span>
-                                </a>
-                            </div>
-                            <div class="menu-item">
-                                <a class="menu-link" href="{{ url('/werkstuk') }}">
-         <span class="menu-icon">
-         <i class="ki-outline ki-abstract-26 fs-2"></i>
-         </span>
-                                    <span class="menu-title">Werkstukken</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    @else
-                        <div class="{{ checkActivePage(['werkstuk', 'werkstuk/*']) }} menu-item menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
-                            <a class="menu-link" href="{{ url('/werkstuk') }}">
-                                <span class="menu-title">Werkstukken</span>
                                 <span class="menu-arrow d-lg-none"></span>
                             </a>
                         </div>

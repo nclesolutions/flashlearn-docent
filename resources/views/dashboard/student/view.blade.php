@@ -72,7 +72,7 @@
                                 </li>
                                 <!--end::Item-->
                                 <!--begin::Item-->
-                                <li class="breadcrumb-item text-white fw-bold lh-1">Huiswerk</li>
+                                <li class="breadcrumb-item text-white fw-bold lh-1">Leerlingen</li>
                                 <!--end::Item-->
                             </ul>
                             <!--end::Breadcrumb-->
@@ -84,9 +84,9 @@
                             <div class="page-title me-5">
                                 <!--begin::Title-->
                                 <h1 class="page-heading d-flex text-white fw-bold fs-2 flex-column justify-content-center my-0">
-                                    Huiswerk
+                                    Leerlingen
                                     <!--begin::Description-->
-                                    <span class="page-desc text-gray-700 fw-semibold fs-6 pt-3">Op deze pagina vind je al je huiswerk!</span>
+                                    <span class="page-desc text-gray-700 fw-semibold fs-6 pt-3">Op deze pagina vind je al je mentor-leerlingen.</span>
                                     <!--end::Description-->
                                 </h1>
                                 <!--end::Title-->
@@ -136,13 +136,17 @@
                                             <!--begin::List-->
                                             <div class="scroll-y me-n5 pe-5 h-300px h-xl-auto" data-kt-scroll="true" data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-max-height="auto" data-kt-scroll-dependencies="#kt_header, #kt_toolbar, #kt_footer, #kt_contacts_list_header" data-kt-scroll-wrappers="#kt_content, #kt_contacts_list_body" data-kt-scroll-stretch="#kt_contacts_list, #kt_contacts_main" data-kt-scroll-offset="5px">
                                                 @if ($groupedResults)
-                                                    @foreach ($groupedResults as $inleverDatum => $huiswerk)
+                                                    @foreach ($groupedResults as $inleverDate => $homeworkList)
                                                         <div class="d-flex flex-stack py-4">
                                                             <div class="d-flex align-items-center">
                                                                 <div class="ms-4">
-                                                                    <div class="fw-semibold fs-7 text-muted">{{ $inleverDatum }}</div>
-                                                                    @foreach ($huiswerk as $row)
-                                                                        <a href="{{ url('/huiswerk/view/' . $row->unique_id) }}" class="fs-6 fw-bold text-hover-primary mb-2 text-gray-900">{{ $row->title }}</a>
+                                                                    <div class="fw-semibold fs-7 text-muted">{{ $inleverDate }}</div>
+                                                                    @foreach ($homeworkList as $row)
+                                                                        @php
+                                                                            $isActive = $id == $row->unique_id;
+                                                                            $activeClass = $isActive ? 'active' : 'text-gray-900';
+                                                                        @endphp
+                                                                        <a href="/huiswerk/view/{{ $row->unique_id }}" class="fs-6 fw-bold {{ $activeClass }} text-hover-primary mb-2">{{ $row->title }}</a>
                                                                         <div class="fw-semibold fs-7 text-muted"><b>{{ $row->subject }}</b></div>
                                                                     @endforeach
                                                                 </div>
@@ -166,24 +170,37 @@
                                 <!--end::Search-->
                                 <!--begin::Content-->
                                 <div class="col-xl-8">
-                                    <!--begin::Card-->
                                     <div class="card card-flush h-lg-100" id="kt_contacts_main">
-                                        <!--begin::Card body-->
-                                        <div class="card-body p-0">
-                                            <!--begin::Wrapper-->
-                                            <div class="card-px text-center py-20 my-10">
-                                                <!--begin::Title-->
-                                                <h2 class="fs-2x fw-bold mb-10">Huiswerk</h2>
-                                                <!--end::Title-->
-                                                <!--begin::Description-->
-                                                <p class="text-gray-400 fs-4 fw-semibold mb-10">Op deze pagina vind je al je huiswerk voor de komende weken.</p>
-                                                <!--end::Description-->
+                                        <div class="card-header pt-7" id="kt_chat_contacts_header">
+                                            <div class="card-title">
+                                                <h2>{{ $homework->subject }} - {{ $homework->title }}</h2>
                                             </div>
-                                            <!--end::Wrapper-->
                                         </div>
-                                        <!--end::Card body-->
+                                        <div class="card-body pt-1">
+                                            <div class="d-flex gap-7 align-items-center">
+                                                <div class="d-flex flex-column gap-2">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <a class="text-muted text-hover-primary">Afmaken voor {{ $homework->return_date }}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 fw-semibold mt-6 mb-8 gap-2">
+                                                <li class="nav-item">
+                                                    <a class="nav-link text-active-primary d-flex align-items-center pb-4 active" data-bs-toggle="tab" href="#kt_contact_view_general">
+                                                        Beschrijving</a>
+                                                </li>
+                                            </ul>
+                                            <div class="tab-content" id="">
+                                                <div class="tab-pane fade show active" id="kt_contact_view_general" role="tabpanel">
+                                                    <div class="d-flex flex-column gap-5 mt-7">
+                                                        <div class="d-flex flex-column gap-1">
+                                                            <p>{!! $homework->description !!}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <!--end::Card-->
                                 </div>
                                 <!--end::Content-->
                             </div>
