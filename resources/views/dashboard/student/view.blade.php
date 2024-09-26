@@ -135,30 +135,26 @@
                                         <div class="card-body pt-5" id="kt_contacts_list_body">
                                             <!--begin::List-->
                                             <div class="scroll-y me-n5 pe-5 h-300px h-xl-auto" data-kt-scroll="true" data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-max-height="auto" data-kt-scroll-dependencies="#kt_header, #kt_toolbar, #kt_footer, #kt_contacts_list_header" data-kt-scroll-wrappers="#kt_content, #kt_contacts_list_body" data-kt-scroll-stretch="#kt_contacts_list, #kt_contacts_main" data-kt-scroll-offset="5px">
-                                                @if ($groupedResults)
-                                                    @foreach ($groupedResults as $inleverDate => $homeworkList)
-                                                        <div class="d-flex flex-stack py-4">
-                                                            <div class="d-flex align-items-center">
-                                                                <div class="ms-4">
-                                                                    <div class="fw-semibold fs-7 text-muted">{{ $inleverDate }}</div>
-                                                                    @foreach ($homeworkList as $row)
-                                                                        @php
-                                                                            $isActive = $id == $row->unique_id;
-                                                                            $activeClass = $isActive ? 'active' : 'text-gray-900';
-                                                                        @endphp
-                                                                        <a href="/huiswerk/view/{{ $row->unique_id }}" class="fs-6 fw-bold {{ $activeClass }} text-hover-primary mb-2">{{ $row->title }}</a>
-                                                                        <div class="fw-semibold fs-7 text-muted"><b>{{ $row->subject }}</b></div>
-                                                                    @endforeach
-                                                                </div>
-                                                            </div>
+                                                @if ($studentDetails)
+                                                @foreach ($studentDetails as $student)
+
+                                                <div class="d-flex flex-stack py-4">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="ms-4">
+                                                            <div class="fw-semibold fs-7 text-muted">{{ $student->email }}</div>
+                                                            <a href="{{ url('/leerling/bekijken/' . $student->id) }}" class="fs-6 fw-bold text-hover-primary mb-2 text-gray-900">{{ $student->firstname }} {{ $student->lastname }}</a>
+                                                            <div class="fw-semibold fs-7 text-muted"><b>@</b>{{ $student->username }}</div>
                                                         </div>
-                                                        <div class="separator separator-dashed d-none"></div>
-                                                    @endforeach
-                                                @else
-                                                    <div class="text-center py-5">
-                                                        <p class="text-gray-400 fs-4 fw-semibold mb-2">Geen huiswerk beschikbaar.</p>
-                                                        <img class="mw-100 mh-300px" alt="" src="{{ asset('assets/media/illustrations/sketchy-1/5.png') }}" />
                                                     </div>
+                                                </div>
+                                                <div class="separator separator-dashed d-none"></div>
+                                                @endforeach
+
+                                                @else
+                                                <div class="text-center py-5">
+                                                    <p class="text-gray-400 fs-4 fw-semibold mb-2">Geen leerlingen beschikbaar.</p>
+                                                    <img class="mw-100 mh-300px" alt="" src="{{ asset('assets/media/illustrations/sketchy-1/5.png') }}" />
+                                                </div>
                                                 @endif
                                             </div>
                                             <!--end::List-->
@@ -173,29 +169,97 @@
                                     <div class="card card-flush h-lg-100" id="kt_contacts_main">
                                         <div class="card-header pt-7" id="kt_chat_contacts_header">
                                             <div class="card-title">
-                                                <h2>{{ $homework->subject }} - {{ $homework->title }}</h2>
+                                                <h2>{{ $user->firstname }} {{ $user->lastname }}</h2>
                                             </div>
                                         </div>
                                         <div class="card-body pt-1">
                                             <div class="d-flex gap-7 align-items-center">
                                                 <div class="d-flex flex-column gap-2">
                                                     <div class="d-flex align-items-center gap-2">
-                                                        <a class="text-muted text-hover-primary">Afmaken voor {{ $homework->return_date }}</a>
+                                                        <a class="text-muted text-hover-primary"><b>@</b>{{ $user->username }}</a>
                                                     </div>
                                                 </div>
                                             </div>
                                             <ul class="nav nav-custom nav-tabs nav-line-tabs nav-line-tabs-2x fs-6 fw-semibold mt-6 mb-8 gap-2">
                                                 <li class="nav-item">
                                                     <a class="nav-link text-active-primary d-flex align-items-center pb-4 active" data-bs-toggle="tab" href="#kt_contact_view_general">
-                                                        Beschrijving</a>
+                                                        Overzicht</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link text-active-primary d-flex align-items-center pb-4" data-bs-toggle="tab" href="#kt_homework_review">
+                                                        Huiswerk Bekijken</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link text-active-primary d-flex align-items-center pb-4" data-bs-toggle="tab" href="#kt_absence">
+                                                        Afwezigheid</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link text-active-primary d-flex align-items-center pb-4" data-bs-toggle="tab" href="#kt_grades">
+                                                        Cijfers</a>
                                                 </li>
                                             </ul>
                                             <div class="tab-content" id="">
+
+                                                <!-- Algemene informatie tab -->
                                                 <div class="tab-pane fade show active" id="kt_contact_view_general" role="tabpanel">
                                                     <div class="d-flex flex-column gap-5 mt-7">
                                                         <div class="d-flex flex-column gap-1">
-                                                            <p>{!! $homework->description !!}</p>
+                                                            <h3>Algemene Informatie</h3>
+                                                            <p>E-Mailadres: {!! $user->email !!}</p>
+                                                            <p>Voornaam: {!! $user->firstname !!}</p>
+                                                            <p>Achternaam: {!! $user->lastname !!}</p>
+                                                            <p>Gebruikersnaam: {!! $user->username !!}</p>
+                                                            <p>Telefoonnummer: {!! $user->phone !!}</p>
+                                                            <p>Adres: {!! $user->adress !!}</p>
                                                         </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Huiswerk bekijken tab -->
+                                                <div class="tab-pane fade show active" id="kt_homework_review" role="tabpanel">
+                                                    <div class="d-flex flex-column gap-5 mt-7">
+                                                        <h3>Huiswerk Bekijken</h3>
+                                                        @if($homework->isEmpty())
+                                                        <p>Geen huiswerk gevonden.</p>
+                                                        @else
+                                                        <ul>
+                                                            @foreach($homework as $hw)
+                                                            <li>{{ $hw->subject }} - {{ $hw->title }}: {{ $hw->description ?? 'Geen beschrijving meegegeven.' }}</li>
+                                                            @endforeach
+                                                        </ul>
+                                                        @endif
+                                                    </div>
+                                                </div>
+
+                                                <!-- Afwezigheid tab -->
+                                                <div class="tab-pane fade" id="kt_absence" role="tabpanel">
+                                                    <div class="d-flex flex-column gap-5 mt-7">
+                                                        <h3>Afwezigheid</h3>
+                                                        @if($absences->isEmpty())
+                                                        <p>Geen afwezigheden gevonden.</p>
+                                                        @else
+                                                        <ul>
+                                                            @foreach($absences as $absence)
+                                                            <li>{{ $absence->given_date }} - {{ $absence->reason }}: {{ $absence->remark ?? 'Geen opmerking meegegeven.' }}</li>
+                                                            @endforeach
+                                                        </ul>
+                                                        @endif
+                                                    </div>
+                                                </div>
+
+                                                <!-- Cijfers tab -->
+                                                <div class="tab-pane fade" id="kt_grades" role="tabpanel">
+                                                    <div class="d-flex flex-column gap-5 mt-7">
+                                                        <h3>Cijfers</h3>
+                                                        @if($grades->isEmpty())
+                                                        <p>Geen cijfers gevonden.</p>
+                                                        @else
+                                                        <ul>
+                                                            @foreach($grades as $grade)
+                                                            <li>{{ $grade->date_created ?? 'Datum onbekend' }} - {{ $grade->grade }} voor onderdeel {{ $grade->part }} (Gewicht: {{ $grade->weight }})</li>
+                                                            @endforeach
+                                                        </ul>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             </div>

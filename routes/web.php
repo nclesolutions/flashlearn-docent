@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'verified', FetchSchool::class, CheckUserActivation::class])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/leerlingen', [StudentController::class, 'index'])->name('dashboard.homework.index');
-    Route::get('/leerling/bekijken/{id}', [StudentController::class, 'view'])->name('dashboard.homework.view');
+    Route::get('/leerlingen', [StudentController::class, 'index'])->name('dashboard.student.index');
+    Route::get('/leerling/bekijken/{id}', [StudentController::class, 'view'])->name('dashboard.student.view');
 
     Route::get('/cijfers', [GradeController::class, 'index'])->name('dashboard.homework.index');
     Route::get('/cijfer/toevoegen', [GradeController::class, 'create'])->name('dashboard.homework.view');
