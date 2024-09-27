@@ -34,6 +34,9 @@ Route::middleware(['auth', 'verified', FetchSchool::class, CheckUserActivation::
     Route::get('/studiewijzer/bekijken/{id}', [StudyGuideController::class, 'view'])->name('dashboard.studyguide.view');
     Route::get('/studiewijzer/bewerken/{id}', [StudyGuideController::class, 'edit'])->name('dashboard.studyguide.edit');
     Route::get('/studiewijzer/toevoegen', [StudyGuideController::class, 'create'])->name('dashboard.studyguide.create');
+    Route::post('/studiewijzer/add', [StudyGuideController::class, 'store'])->name('dashboard.studyguide.store');
+    Route::get('get-classes-by-subject', [StudyGuideController::class, 'getClassesBySubject'])->name('get.classes.by.subject');
+    Route::get('get-students-by-class', [StudyGuideController::class, 'getStudentsByClass'])->name('get.students.by.class');
 
     Route::get('/school', [SchoolController::class, 'index'])->name('school.index');
 });
