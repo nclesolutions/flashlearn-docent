@@ -91,8 +91,8 @@
                                         <div class="card mb-3">
                                             <div class="card-header d-flex justify-content-between align-items-center">
                                                 <h3 class="card-title">{{ $guide->title }}</h3>
-                                                <a href="#" class="btn btn-sm btn-light">
-                                                    Bekijken/Bewerken
+                                                <a href="{{ route('dashboard.studyguide.view', $guide->id) }}" class="btn btn-sm btn-light">
+                                                    Bekijken
                                                 </a>
                                             </div>
                                             <div class="card-body">

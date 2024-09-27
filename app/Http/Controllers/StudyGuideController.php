@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Availability;
+use App\Models\Homework;
 use App\Models\StudyGuide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,7 +48,17 @@ class StudyGuideController extends Controller
     }
     public function view($id)
     {
-        return view('dashboard.studyguide.view', compact('studyGuide'));
+        // Haal het juiste record op uit de database
+        $studyGuide = StudyGuide::with(['subject', 'schoolClass'])
+            ->where('id', $id)
+            ->firstOrFail();
+
+        // Haal huiswerk op dat gerelateerd is aan het vak van deze studiewijzer
+        $homeworks = Homework::where('study_guide_id', $id)
+            ->where('subject_id', $studyGuide->subject->id)
+            ->get();
+
+        return view('dashboard.studyguide.view', compact('studyGuide', 'homeworks'));
     }
 
     public function edit($id)

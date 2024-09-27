@@ -19,4 +19,13 @@ class StudyGuide extends Model
     {
         return $this->hasMany(Availability::class);
     }
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class);
+    }
+    // Definieer de relatie met het SchoolClass model (klassen)
+    public function schoolClass() // Wijzig relatie naam naar schoolClass
+    {
+        return $this->belongsTo(SchoolClass::class, 'class_id'); // Zorg ervoor dat je de juiste vreemde sleutel gebruikt
+    }
 }
