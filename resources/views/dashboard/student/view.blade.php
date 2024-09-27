@@ -142,7 +142,7 @@
                                                     <div class="d-flex align-items-center">
                                                         <div class="ms-4">
                                                             <div class="fw-semibold fs-7 text-muted">{{ $student->email }}</div>
-                                                            <a href="{{ url('/leerling/bekijken/' . $student->id) }}" class="fs-6 fw-bold text-hover-primary mb-2 text-gray-900">{{ $student->firstname }} {{ $student->lastname }}</a>
+                                                            <a href="{{ url('/leerling/bekijken/' . $student->student_id) }}" class="fs-6 fw-bold text-hover-primary mb-2 text-gray-900">{{ $student->firstname }} {{ $student->lastname }}</a>
                                                             <div class="fw-semibold fs-7 text-muted"><b>@</b>{{ $student->username }}</div>
                                                         </div>
                                                     </div>
@@ -248,7 +248,7 @@
                                                 <div class="tab-pane fade" id="kt_homework_review" role="tabpanel">
                                                     <div class="card mt-7">
                                                         <div class="card-body">
-                                                            @if($homework->isEmpty())
+                                                            @if($filteredHomework->isEmpty())
                                                             <p>Geen huiswerk gevonden.</p>
                                                             @else
                                                             <div class="table-responsive">
@@ -261,7 +261,7 @@
                                                                     </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                    @foreach($homework as $hw)
+                                                                    @foreach($filteredHomework as $hw)
                                                                     <tr>
                                                                         <td>{{ $hw->subject }}</td>
                                                                         <td>{{ $hw->title }}</td>

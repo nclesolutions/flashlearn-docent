@@ -142,7 +142,7 @@
                                                             <div class="d-flex align-items-center">
                                                                 <div class="ms-4">
                                                                     <div class="fw-semibold fs-7 text-muted">{{ $student->email }}</div>
-                                                                        <a href="{{ url('/leerling/bekijken/' . $student->id) }}" class="fs-6 fw-bold text-hover-primary mb-2 text-gray-900">{{ $student->firstname }} {{ $student->lastname }}</a>
+                                                                        <a href="{{ url('/leerling/bekijken/' . $student->student_id) }}" class="fs-6 fw-bold text-hover-primary mb-2 text-gray-900">{{ $student->firstname }} {{ $student->lastname }}</a>
                                                                         <div class="fw-semibold fs-7 text-muted"><b>@</b>{{ $student->username }}</div>
                                                                 </div>
                                                             </div>
