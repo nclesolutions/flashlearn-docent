@@ -17,102 +17,9 @@
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 
+    <!-- Custom Styles -->
     <style>
-        :root {
-            --primary-color: #007bff;
-            --secondary-color: #f2f2f2;
-            --background-color: #f9f9f9;
-            --border-radius: 8px;
-            --card-padding: 16px;
-            --table-padding: 20px;
-        }
-
-        .calendar-table {
-            width: 100%;
-            border-collapse: collapse;
-            background-color: var(--background-color);
-            padding: var(--table-padding);
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .calendar-table th, .calendar-table td {
-            border: 1px solid #ddd;
-            padding: var(--card-padding);
-            vertical-align: top;
-            background-color: #fff;
-            border-radius: var(--border-radius);
-        }
-        .calendar-table th.day-header {
-            position: sticky;
-            top: 0;
-            background-color: var(--secondary-color);
-            text-align: center;
-            font-weight: bold;
-            z-index: 100; /* Ensures the headers are above other content */
-            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
-        }
-        .week-task {
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: var(--card-padding);
-            border-radius: var(--border-radius);
-            margin-bottom: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .week-dates-muted {
-            color: #6c757d; /* Muted text color */
-        }
-        .homework-item {
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: var(--card-padding);
-            border-radius: var(--border-radius);
-            margin-bottom: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .homework-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .homework-deadline {
-            color: #ff0000;
-        }
-        .scrollable-container {
-            width: 100%;
-            height: 80vh;
-            overflow-y: scroll;
-            border: none;
-            padding: initial;
-            background-color: initial;
-            position: relative; /* This ensures the sticky headers function correctly */
-        }
-        .current-week {
-            background-color: var(--secondary-color);
-        }
-        .calendar-card {
-            margin-bottom: 16px;
-        }
-        .calendar-card-header {
-            background-color: var(--primary-color);
-            color: #fff;
-            padding: var(--card-padding);
-            border-top-left-radius: var(--border-radius);
-            border-top-right-radius: var(--border-radius);
-            font-weight: bold;
-            text-align: center;
-        }
-        .calendar-card-body {
-            padding: var(--card-padding);
-        }
-
-        .week-row-header {
-            position: sticky;
-            left: 0; /* Ensures the week headers stay visible */
-            background-color: var(--secondary-color);
-            z-index: 101; /* Ensures the week headers are above other content */
-            text-align: center;
-            box-shadow: 2px 0 2px -1px rgba(0, 0, 0, 0.4);
-        }
+        /* ... jouw bestaande stijlcode ... */
     </style>
 </head>
 
@@ -212,6 +119,17 @@
 </div>
 
 <script>
+    // Voorbeeld van huiswerkdata als een array van objecten
+    var homeworks = [
+    @foreach($homeworks as $homework)
+    {
+        title: '{{ $homework->title }}',
+            start: '{{ $homework->return_date }}',
+        description: '{{ $homework->description }}'
+    },
+    @endforeach
+    ];
+
     // Functie om huiswerk op te zetten in FullCalendar
     function setupCalendar(homeworks) {
         var todayDate = moment().startOf('day');
@@ -220,7 +138,7 @@
         var calendarEvents = homeworks.map(function(homework) {
             return {
                 title: homework.title,
-                start: homework.return_date,
+                start: homework.start,
                 description: homework.description,
                 className: 'fc-event-primary' // Voeg custom classes toe zoals nodig
             };
