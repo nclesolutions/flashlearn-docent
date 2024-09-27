@@ -30,10 +30,10 @@ Route::middleware(['auth', 'verified', FetchSchool::class, CheckUserActivation::
     Route::get('/notities/bekijken/{id}', [NoteController::class, 'view'])->name('dashboard.homework.view');
     Route::get('/notities/bewerken/{id}', [NoteController::class, 'edit'])->name('dashboard.homework.view');
 
-    Route::get('/studiewijzers', [StudyGuideController::class, 'index'])->name('dashboard.homework.index');
-    Route::get('/studiewijzer/bekijken/{id}', [StudyGuideController::class, 'view'])->name('dashboard.homework.view');
-    Route::get('/studiewijzer/bewerken/{id}', [StudyGuideController::class, 'edit'])->name('dashboard.homework.view');
-    Route::get('/studiewijzer/toevoegen', [StudyGuideController::class, 'create'])->name('dashboard.homework.view');
+    Route::get('/studiewijzers', [StudyGuideController::class, 'index'])->name('dashboard.studyguide.index');
+    Route::get('/studiewijzer/bekijken/{id}', [StudyGuideController::class, 'view'])->name('dashboard.studyguide.view');
+    Route::get('/studiewijzer/bewerken/{id}', [StudyGuideController::class, 'edit'])->name('dashboard.studyguide.edit');
+    Route::get('/studiewijzer/toevoegen', [StudyGuideController::class, 'create'])->name('dashboard.studyguide.create');
 
     Route::get('/school', [SchoolController::class, 'index'])->name('school.index');
 });

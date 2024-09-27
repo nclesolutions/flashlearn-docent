@@ -187,7 +187,7 @@
                                                 </li>
                                                 <li class="nav-item">
                                                     <a class="nav-link text-active-primary d-flex align-items-center pb-4" data-bs-toggle="tab" href="#kt_homework_review">
-                                                        Huiswerk Bekijken</a>
+                                                        Huiswerk</a>
                                                 </li>
                                                 <li class="nav-item">
                                                     <a class="nav-link text-active-primary d-flex align-items-center pb-4" data-bs-toggle="tab" href="#kt_absence">
@@ -202,64 +202,145 @@
 
                                                 <!-- Algemene informatie tab -->
                                                 <div class="tab-pane fade show active" id="kt_contact_view_general" role="tabpanel">
-                                                    <div class="d-flex flex-column gap-5 mt-7">
-                                                        <div class="d-flex flex-column gap-1">
-                                                            <h3>Algemene Informatie</h3>
-                                                            <p>E-Mailadres: {!! $user->email !!}</p>
-                                                            <p>Voornaam: {!! $user->firstname !!}</p>
-                                                            <p>Achternaam: {!! $user->lastname !!}</p>
-                                                            <p>Gebruikersnaam: {!! $user->username !!}</p>
-                                                            <p>Telefoonnummer: {!! $user->phone !!}</p>
-                                                            <p>Adres: {!! $user->adress !!}</p>
+                                                    <div class="card mt-7">
+                                                        <div class="card-body">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-hover table-rounded table-striped border gy-7 gs-7">
+                                                                    <thead>
+                                                                    <tr class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200">
+                                                                        <th>Label</th>
+                                                                        <th>Gegevens</th>
+                                                                    </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                    <tr>
+                                                                        <td>E-Mailadres</td>
+                                                                        <td>{!! $user->email !!}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Voornaam</td>
+                                                                        <td>{!! $user->firstname !!}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Achternaam</td>
+                                                                        <td>{!! $user->lastname !!}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Gebruikersnaam</td>
+                                                                        <td>{!! $user->username !!}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Telefoonnummer</td>
+                                                                        <td>{!! $user->phone !!}</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Adres</td>
+                                                                        <td>{!! $user->adress !!}</td>
+                                                                    </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <!-- Huiswerk bekijken tab -->
-                                                <div class="tab-pane fade show active" id="kt_homework_review" role="tabpanel">
-                                                    <div class="d-flex flex-column gap-5 mt-7">
-                                                        <h3>Huiswerk Bekijken</h3>
-                                                        @if($homework->isEmpty())
-                                                        <p>Geen huiswerk gevonden.</p>
-                                                        @else
-                                                        <ul>
-                                                            @foreach($homework as $hw)
-                                                            <li>{{ $hw->subject }} - {{ $hw->title }}: {{ $hw->description ?? 'Geen beschrijving meegegeven.' }}</li>
-                                                            @endforeach
-                                                        </ul>
-                                                        @endif
+                                                <div class="tab-pane fade" id="kt_homework_review" role="tabpanel">
+                                                    <div class="card mt-7">
+                                                        <div class="card-body">
+                                                            @if($homework->isEmpty())
+                                                            <p>Geen huiswerk gevonden.</p>
+                                                            @else
+                                                            <div class="table-responsive">
+                                                                <table class="table table-hover table-rounded table-striped border gy-7 gs-7">
+                                                                    <thead>
+                                                                    <tr class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200">
+                                                                        <th>Vak</th>
+                                                                        <th>Titel</th>
+                                                                        <th>Beschrijving</th>
+                                                                    </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                    @foreach($homework as $hw)
+                                                                    <tr>
+                                                                        <td>{{ $hw->subject }}</td>
+                                                                        <td>{{ $hw->title }}</td>
+                                                                        <td>{{ $hw->description ?? 'Geen beschrijving meegegeven.' }}</td>
+                                                                    </tr>
+                                                                    @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
 
                                                 <!-- Afwezigheid tab -->
                                                 <div class="tab-pane fade" id="kt_absence" role="tabpanel">
-                                                    <div class="d-flex flex-column gap-5 mt-7">
-                                                        <h3>Afwezigheid</h3>
-                                                        @if($absences->isEmpty())
-                                                        <p>Geen afwezigheden gevonden.</p>
-                                                        @else
-                                                        <ul>
-                                                            @foreach($absences as $absence)
-                                                            <li>{{ $absence->given_date }} - {{ $absence->reason }}: {{ $absence->remark ?? 'Geen opmerking meegegeven.' }}</li>
-                                                            @endforeach
-                                                        </ul>
-                                                        @endif
+                                                    <div class="card mt-7">
+                                                        <div class="card-body">
+                                                            @if($absences->isEmpty())
+                                                            <p>Geen afwezigheden gevonden.</p>
+                                                            @else
+                                                            <div class="table-responsive">
+                                                                <table class="table table-hover table-rounded table-striped border gy-7 gs-7">
+                                                                    <thead>
+                                                                    <tr class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200">
+                                                                        <th>Datum</th>
+                                                                        <th>Tijd</th>
+                                                                        <th>Reden</th>
+                                                                        <th>Opmerking</th>
+                                                                    </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                    @foreach($absences as $absence)
+                                                                    <tr>
+                                                                        <td>{{ $absence->given_date }}</td>
+                                                                        <td>{{ $absence->start_time }} tot {{ $absence->end_time }}</td>
+                                                                        <td>{{ $absence->reason }}</td>
+                                                                        <td>{{ $absence->remark ?? 'Geen opmerking meegegeven.' }}</td>
+                                                                    </tr>
+                                                                    @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
 
                                                 <!-- Cijfers tab -->
                                                 <div class="tab-pane fade" id="kt_grades" role="tabpanel">
-                                                    <div class="d-flex flex-column gap-5 mt-7">
-                                                        <h3>Cijfers</h3>
-                                                        @if($grades->isEmpty())
-                                                        <p>Geen cijfers gevonden.</p>
-                                                        @else
-                                                        <ul>
-                                                            @foreach($grades as $grade)
-                                                            <li>{{ $grade->date_created ?? 'Datum onbekend' }} - {{ $grade->grade }} voor onderdeel {{ $grade->part }} (Gewicht: {{ $grade->weight }})</li>
-                                                            @endforeach
-                                                        </ul>
-                                                        @endif
+                                                    <div class="card mt-7">
+                                                        <div class="card-body">
+                                                            @if($grades->isEmpty())
+                                                            <p>Geen cijfers gevonden.</p>
+                                                            @else
+                                                            <div class="table-responsive">
+                                                                <table class="table table-hover table-rounded table-striped border gy-7 gs-7">
+                                                                    <thead>
+                                                                    <tr class="fw-semibold fs-6 text-gray-800 border-bottom-2 border-gray-200">
+                                                                        <th>Vak</th>
+                                                                        <th>Cijfer</th>
+                                                                        <th>Onderdeel</th>
+                                                                        <th>Gewicht</th>
+                                                                    </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                    @foreach($grades as $grade)
+                                                                    <tr>
+                                                                        <td>{{ $grade->subject_name ?? 'Datum onbekend' }}</td>
+                                                                        <td>{{ $grade->grade }}</td>
+                                                                        <td>{{ $grade->part }}</td>
+                                                                        <td>{{ $grade->weight }}</td>
+                                                                    </tr>
+                                                                    @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

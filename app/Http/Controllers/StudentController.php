@@ -5,16 +5,16 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class StudentController extends Controller {
-
+class StudentController extends Controller
+{
     public function index()
     {
-        // Ensure the user is authenticated
+        // Zorg ervoor dat de gebruiker is geauthenticeerd
         if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        // Fetch the class_id for the authenticated teacher
+        // Haal class_id op voor de geauthenticeerde leraar
         $teacher = DB::table('teachers')->where('user_id', Auth::id())->first();
         if (!$teacher) {
             return redirect()->route('dashboard')->with('error', 'Teacher not found');
@@ -22,10 +22,13 @@ class StudentController extends Controller {
 
         $class_id = $teacher->class_id;
 
-        // Fetch students with the same class_id
+        // Haal de naam van de leraar op
+        $teacherName = DB::table('users')->where('id', $teacher->user_id)->value('firstname');
+
+        // Haal studenten met dezelfde class_id op
         $students = DB::table('students')->where('class_id', $class_id)->get();
 
-        // Fetch user details for each student
+        // Haal gebruikersdetails op voor elke student
         $studentDetails = [];
         foreach ($students as $student) {
             $user = DB::table('users')->where('id', $student->user_id)->first();
@@ -34,17 +37,17 @@ class StudentController extends Controller {
             }
         }
 
-        return view('dashboard.student.index', compact('studentDetails'));
+        return view('dashboard.student.index', compact('studentDetails', 'teacherName'));
     }
 
     public function view($id)
     {
-        // Ensure the user is authenticated
+        // Zorg ervoor dat de gebruiker is geauthenticeerd
         if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        // Fetch the class_id for the authenticated teacher
+        // Haal class_id op voor de geauthenticeerde leraar
         $teacher = DB::table('teachers')->where('user_id', Auth::id())->first();
         if (!$teacher) {
             return redirect()->route('dashboard')->with('error', 'Teacher not found');
@@ -52,10 +55,14 @@ class StudentController extends Controller {
 
         $class_id = $teacher->class_id;
 
-        // Fetch students with the same class_id
+        // Haal de voornaam en achternaam van de leraar op
+        $teacherUser = DB::table('users')->select('firstname', 'lastname')->where('id', $teacher->user_id)->first();
+        $teacherName = $teacherUser->firstname . ' ' . $teacherUser->lastname;
+
+        // Haal studenten met dezelfde class_id op
         $students = DB::table('students')->where('class_id', $class_id)->get();
 
-        // Fetch user details for each student
+        // Haal gebruikersdetails op voor elke student
         $studentDetails = [];
         foreach ($students as $student) {
             $user = DB::table('users')->where('id', $student->user_id)->first();
@@ -64,28 +71,30 @@ class StudentController extends Controller {
             }
         }
 
-        // Fetch the student details
+        // Haal studentdetails op
         $student = DB::table('students')->where('user_id', $id)->first();
         if (!$student) {
             return redirect()->route('dashboard')->with('error', 'Student not found');
         }
 
-        // Fetch user details for the student
+        // Haal gebruikersdetails op voor de student
         $user = DB::table('users')->where('id', $id)->first();
         if (!$user) {
             return redirect()->route('dashboard')->with('error', 'User not found');
         }
 
-        // Fetch absence details for the student
+        // Haal absencedetails op voor de student
         $absences = DB::table('absence')->where('user_id', $id)->get();
 
-        // Fetch homework details for the student
         $homework = DB::table('homework')->where('user_id', $id)->get();
 
-        // Fetch grade details for the student
-        $grades = DB::table('grades')->where('user_id', $id)->get();
+        // Haal gradedetails op voor de student inclusief vakdetails
+        $grades = DB::table('grades')
+            ->join('subjects', 'grades.subject_id', '=', 'subjects.id')
+            ->where('grades.user_id', $id)
+            ->select('grades.*', 'subjects.name as subject_name')
+            ->get();
 
-        return view('dashboard.student.view', compact('user', 'student', 'studentDetails', 'absences', 'homework', 'grades'));
+        return view('dashboard.student.view', compact('user', 'student', 'studentDetails', 'absences', 'homework', 'grades', 'teacherName'));
     }
-
 }

@@ -50,14 +50,14 @@
                                 <li class="breadcrumb-item">
                                     <i class="ki-outline ki-right fs-7 text-gray-700 mx-n1"></i>
                                 </li>
-                                <li class="breadcrumb-item text-white fw-bold lh-1">Flitskaarten</li>
+                                <li class="breadcrumb-item text-white fw-bold lh-1">Studiewijzers</li>
                             </ul>
                         </div>
                         <div class="d-flex flex-stack flex-wrap flex-lg-nowrap gap-4 gap-lg-10 pt-13 pb-6">
                             <div class="page-title me-5">
                                 <h1 class="page-heading d-flex text-white fw-bold fs-2 flex-column justify-content-center my-0">
-                                    Flitskaarten
-                                    <span class="page-desc text-gray-700 fw-semibold fs-6 pt-3">Beheer en studeer je flitskaarten!</span>
+                                    Studiewijzers
+                                    <span class="page-desc text-gray-700 fw-semibold fs-6 pt-3">Beheer studiewijzers voor jou vakken.</span>
                                 </h1>
                             </div>
                         </div>
@@ -72,48 +72,49 @@
                             <div id="container">
                                 <div class="card rounded">
                                     <div class="card-header">
-                                        <h3 class="card-title">Flitskaarten <span class="badge badge-success" style="margin-left: 5px;">BÉTA</span></h3>
+                                        <h3 class="card-title">Studiewijzers <span class="badge badge-success" style="margin-left: 5px;">BÉTA</span></h3>
                                         <div class="card-toolbar">
-                                            <a href="{{ route('dashboard.flashcards.create') }}" class="btn btn-sm btn-light">
-                                                Nieuwe Flitskaart
+                                            <a href="{{ route('dashboard.studyguide.create') }}" class="btn btn-sm btn-light">
+                                                Nieuwe Studiewijzer
                                             </a>
                                         </div>
                                     </div>
                                     <div class="card-body">
-                                        Welkom bij Flitskaarten, de gloednieuwe functie in Flashlearn! Met Flitskaarten kun je snel en effectief leren door middel van digitale kaartjes. Of je nu studeert voor een examen of gewoon je kennis wilt bijspijkeren, deze functie helpt je om op een eenvoudige en gestructureerde manier te oefenen. Maak je eigen kaartjes of kies uit onze uitgebreide collectie en verbeter je leerervaring in no time. Probeer het nu uit en ontdek hoe Flitskaarten je leren naar een hoger niveau tilt!
+                                        Deze studiewijzer functionaliteit is momenteel in beta. Sommige functies kunnen nog onvolledig zijn of fouten bevatten
                                     </div>
                                 </div>
-                                <div class="row pt-5">
-                                    @foreach ($subjects as $subject)
+                                @foreach ($groupedStudyGuides as $subjectId => $studyGuides)
+                                <h2 class="mt-4">{{ DB::table('subjects')->where('id', $subjectId)->value('name') }}</h2> <!-- Haal de naam van het vak op -->
+                                <div class="row">
+                                    @foreach ($studyGuides as $guide)
                                     <div class="col-md-6 col-lg-4 mb-6">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h3 class="card-title">{{ $subject->name }}</h3>
-                                                <div class="card-toolbar">
-                                                    <a href="{{ route('dashboard.flashcards.start', $subject->id) }}" class="btn btn-sm btn-light">
-                                                        Starten
-                                                    </a>
-                                                </div>
+                                        <div class="card mb-3">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h3 class="card-title">{{ $guide->title }}</h3>
+                                                <a href="#" class="btn btn-sm btn-light">
+                                                    Bekijken/Bewerken
+                                                </a>
                                             </div>
                                             <div class="card-body">
-                                                Met deze flitskaarten kun je je voorbereiden op examens, je geheugen trainen en je kennis verdiepen. Klik op de onderstaande knop om direct te starten.
+                                                In deze studiewijzer kun je huiswerk toevoegen voor leerlingen.
                                             </div>
                                             <div class="card-footer">
-                                                                    <span class="badge badge-light-success">
-                        {{ $subject->flashcards->count() }} kaarten
-                    </span>
+                                                        <span class="badge badge-success">
+                                                            {{ $guide->student_count }} leerlingen
+                                                        </span>
                                             </div>
-
                                         </div>
                                     </div>
                                     @endforeach
                                 </div>
+                                @endforeach
 
-                                @if($subjects->isEmpty())
-                                    <div class="alert alert-warning" role="alert">
-                                        <strong>Geen vakken gevonden.</strong> Voeg een nieuw vak toe om te beginnen met flitskaarten!
-                                    </div>
+                                @if($studyGuides->isEmpty())
+                                <div class="alert alert-warning" role="alert">
+                                    <strong>Geen studiewijzers gevonden.</strong> Voeg een nieuwe studiewijzer toe!
+                                </div>
                                 @endif
+
                             </div>
                         </div>
                         @include('includes.footer')
