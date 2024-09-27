@@ -22,6 +22,11 @@ class StudentController extends Controller
 
         $class_id = $teacher->class_id;
 
+        // Haal alle study_guide_ids op die bij de klas horen
+        $studyGuideIds = DB::table('study_guides')
+            ->where('class_id', $class_id)
+            ->pluck('id');
+
         // Haal de naam van de leraar op
         $teacherName = DB::table('users')->where('id', $teacher->user_id)->value('firstname');
 
@@ -55,9 +60,14 @@ class StudentController extends Controller
 
         $class_id = $teacher->class_id;
 
+        // Haal alle study_guide_ids op die bij de klas horen
+        $studyGuideIds = DB::table('study_guides')
+            ->where('class_id', $class_id)
+            ->pluck('id');
+
         // Haal de voornaam en achternaam van de leraar op
         $teacherUser = DB::table('users')->select('firstname', 'lastname')->where('id', $teacher->user_id)->first();
-        $teacherName = $teacherUser->firstname . ' ' . $teacherUser->lastname;
+        $teacherName = "{$teacherUser->firstname} {$teacherUser->lastname}";
 
         // Haal studenten met dezelfde class_id op
         $students = DB::table('students')->where('class_id', $class_id)->get();
@@ -86,7 +96,10 @@ class StudentController extends Controller
         // Haal absencedetails op voor de student
         $absences = DB::table('absence')->where('user_id', $id)->get();
 
-        $homework = DB::table('homework')->where('user_id', $id)->get();
+        // Haal huiswerkdetails op voor de student, gebaseerd op study_guide_id
+        $homework = DB::table('homework')
+            ->whereIn('study_guide_id', $studyGuideIds)
+            ->get();
 
         // Haal gradedetails op voor de student inclusief vakdetails
         $grades = DB::table('grades')
