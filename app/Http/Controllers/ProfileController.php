@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -9,27 +8,24 @@ use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
-    public function index()
+    private function getUserData()
     {
-        // Ensure the user is authenticated
         if (!Auth::check()) {
             return redirect()->route('login');
         }
+        return Auth::user();
+    }
 
-        // Haal de accountgegevens op
-        $account = Auth::user();
-
-        // Haal de biografie van de gebruiker op
+    private function getAdditionalUserData($userId)
+    {
         $biography = DB::table('users')
-            ->where('id', $account->id)
+            ->where('id', $userId)
             ->value('biography');
 
-        // Haal de org_id (school_id) van de gebruiker op
         $userSchoolId = DB::table('students')
-            ->where('user_id', Auth::id()) // Gebruik $account->id in plaats van $account
+            ->where('user_id', $userId)
             ->value('org_id');
 
-        // Haal de schoolinformatie op als de gebruiker aan een school gekoppeld is
         $schoolInfo = null;
         if ($userSchoolId) {
             $schoolInfo = DB::table('schools')
@@ -37,80 +33,53 @@ class ProfileController extends Controller
                 ->first();
         }
 
-        // Pass gegevens naar de view
-        return view('dashboard.account.index', [
-            'account' => $account,
-            'biography' => $biography,
-            'schoolInfo' => $schoolInfo,
-        ]);
+        return compact('biography', 'schoolInfo');
+    }
+
+    public function index()
+    {
+        $account = $this->getUserData();
+        if ($account instanceof \Illuminate\Http\RedirectResponse) return $account;
+
+        $additionalData = $this->getAdditionalUserData($account->id);
+
+        return view('dashboard.account.index', array_merge(['account' => $account], $additionalData));
     }
 
     public function security()
     {
-        // Ensure the user is authenticated
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
+        $account = $this->getUserData();
+        if ($account instanceof \Illuminate\Http\RedirectResponse) return $account;
 
-        // Haal de accountgegevens op
-        $account = Auth::user();
+        $additionalData = $this->getAdditionalUserData($account->id);
 
-        // Haal de biografie van de gebruiker op
-        $biography = DB::table('users')
-            ->where('id', Auth::id())
-            ->value('biography');
-
-        // Haal de org_id (school_id) van de gebruiker op
-        $userSchoolId = DB::table('students')
-            ->where('user_id', Auth::id()) // Gebruik $account->id in plaats van $account
-            ->value('org_id');
-
-        // Haal de schoolinformatie op als de gebruiker aan een school gekoppeld is
-        $schoolInfo = null;
-        if ($userSchoolId) {
-            $schoolInfo = DB::table('schools')
-                ->where('id', $userSchoolId)
-                ->first();
-        }
-
-        // Pass gegevens naar de view
-        return view('dashboard.account.security', [
-            'account' => $account,
-            'biography' => $biography,
-            'schoolInfo' => $schoolInfo,
-        ]);
+        return view('dashboard.account.security', array_merge(['account' => $account], $additionalData));
     }
+
     public function updateSecurity(Request $request)
     {
-        // Get the authenticated user
         $user = Auth::user();
 
-        // Validate the request
         $request->validate([
-            'email' => 'required|email|unique:users,email,' . $user->id, // Ensure email is unique but ignore the current user's email
-            'current_password' => 'required', // Old password is required
-            'new_password' => 'nullable|min:8', // New password must be confirmed
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'current_password' => 'required',
+            'new_password' => 'nullable|min:8',
         ]);
 
-        // Verify the current password matches the one stored in the database
         if (!Hash::check($request->input('current_password'), $user->password)) {
             return back()->withErrors(['current_password' => 'Het huidige wachtwoord is onjuist.']);
         }
 
-        // Update the email if it's changed
         if ($user->email !== $request->input('email')) {
             $user->email = $request->input('email');
         }
 
-        // Update the password if a new one is provided
         if ($request->filled('new_password')) {
             $user->password = Hash::make($request->input('new_password'));
         }
 
-        // Save the updated user information
         $user->save();
 
-        // Redirect with success message
         return redirect()->route('profile.security')->with('status', [
             'title' => 'Gelukt!',
             'message' => 'Je beveiligingsinstellingen zijn bijgewerkt!',
@@ -120,19 +89,15 @@ class ProfileController extends Controller
 
     public function updateBio(Request $request)
     {
-        // Get the authenticated user
         $user = Auth::user();
 
-        // Validate the biography input
         $request->validate([
             'biography' => 'required|max:1000',
         ]);
 
-        // Update biography
         $user->biography = $request->input('biography');
-        $user->save();  // Save the changes
+        $user->save();
 
-        // Redirect with a success message
         return redirect()->route('profile.settings')->with('status', [
             'title' => 'Gelukt!',
             'message' => 'Je biografie is bijgewerkt!',
@@ -142,67 +107,11 @@ class ProfileController extends Controller
 
     public function settings()
     {
-        // Ensure the user is authenticated
-        if (!Auth::check()) {
-            return redirect()->route('login');
-        }
+        $account = $this->getUserData();
+        if ($account instanceof \Illuminate\Http\RedirectResponse) return $account;
 
-        // Haal de accountgegevens op
-        $account = Auth::user();
+        $additionalData = $this->getAdditionalUserData($account->id);
 
-        // Haal de biografie van de gebruiker op
-        $biography = DB::table('users')
-            ->where('id', $account->id)
-            ->value('biography');
-
-        // Haal de org_id (school_id) van de gebruiker op
-        $userSchoolId = DB::table('students')
-            ->where('user_id', Auth::id()) // Gebruik $account->id in plaats van $account
-            ->value('org_id');
-
-        // Haal de schoolinformatie op als de gebruiker aan een school gekoppeld is
-        $schoolInfo = null;
-        if ($userSchoolId) {
-            $schoolInfo = DB::table('schools')
-                ->where('id', $userSchoolId)
-                ->first();
-        }
-
-        // Pass gegevens naar de view
-        return view('dashboard.account.settings', [
-            'account' => $account,
-            'biography' => $biography,
-            'schoolInfo' => $schoolInfo,
-        ]);
-    }
-
-    // API Endpoint: Haal profielgegevens op voor de ingelogde gebruiker
-    public function APIIndex()
-    {
-        // Zorg ervoor dat de gebruiker is geauthenticeerd
-        $account = Auth::user();
-
-        // Haal de biografie van de gebruiker op
-        $biography = DB::table('users')
-            ->where('id', $account->id)
-            ->value('biography');
-
-        // Haal de org_id (school_id) van de gebruiker op
-        $userSchoolId = DB::table('students')
-            ->where('user_id', Auth::id())
-            ->value('org_id');
-
-        // Haal de schoolinformatie op als de gebruiker aan een school gekoppeld is
-        $schoolInfo = null;
-        if ($userSchoolId) {
-            $schoolInfo = DB::table('schools')
-                ->where('id', $userSchoolId)
-                ->first();
-        }
-
-        // Return de gegevens in JSON-formaat
-        return response()->json([
-            'account' => $account,
-        ]);
+        return view('dashboard.account.settings', array_merge(['account' => $account], $additionalData));
     }
 }

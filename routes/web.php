@@ -65,9 +65,6 @@ Route::post('/wachtwoord/vergeten', [AuthController::class, 'sendResetLink'])->n
 Route::get('/wachtwoord/reset/{token?}', [AuthController::class, 'showResetForm'])->name('password.reset');
 Route::post('/wachtwoord/reset', [AuthController::class, 'resetPassword'])->name('password.update');
 
-Route::get('/onderhoud', [AuthController::class, 'showMaintenance'])->name('maintenance');
-Route::get('/geblokkeerd', [AuthController::class, 'showBlocked'])->name('blocked');
-
 // Uitlog route
 Route::middleware(['auth'])->post('/api/uitloggen', function () {
     Auth::logout();

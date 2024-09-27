@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Schedule;
@@ -14,83 +13,87 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Controleer of de gebruiker is ingelogd
         if (!Auth::check()) {
             return redirect()->route('login');
         }
 
-        // Haal het ID van de huidige geauthenticeerde gebruiker op
         $userId = Auth::id();
-
-        // Haal de docentgegevens van de ingelogde gebruiker op
         $teacher = Teacher::where('user_id', $userId)->first();
 
-        if (!$teacher) {
-            return redirect()->route('dashboard')->withErrors('Docent niet gevonden.');
-        }
-
         $orgId = $teacher->org_id;
-        $schedules = Schedule::where('school_id', $orgId)->get(); // Haal alleen roosters op voor de school van de docent
+        $schedules = Schedule::where('school_id', $orgId)->get();
+        $filteredLessons = $this->getFilteredLessons($schedules, $teacher);
 
+        return view('dashboard.index', compact('filteredLessons'));
+    }
+
+    private function getFilteredLessons($schedules, $teacher) {
         $filteredLessons = [];
 
         foreach ($schedules as $schedule) {
-            // Haal de class_id op uit de Schedule-tabel
-            $className = \DB::table('classes')->where('id', $schedule->class_id)->value('name');
-
-            // Decodeer de JSON-data in een array
+            $className = DB::table('classes')->where('id', $schedule->class_id)->value('name');
             $roosters = json_decode($schedule->data, true);
 
-            // Doorzoek alle weken in het rooster
             foreach ($roosters['weeks'] as $week) {
                 foreach ($week['days'] as $day) {
                     foreach ($day['schedule'] as $lesson) {
                         if ($lesson['teacher'] == $teacher->id) {
-                            // Voeg class_id toe aan de lesdata
-                            $lesson['class'] = $className;
+                            $lesson = $this->augmentLessonData($lesson, $teacher, $className);
+                            $key = $this->generateLessonKey($lesson);
 
-                            // Vervang de 'teacher' ID door de bijbehorende naam
-                            $lesson['teacher'] = strtoupper(substr($teacher->user->firstname, 0, 1)) . '. ' . $teacher->user->lastname;
-
-                            // Groepeer de lessen op basis van tijd, lokaal, docent en klas
-                            $key = $lesson['time'] . '-' . $lesson['location'] . '-' . $lesson['teacher'];
-                            if (!isset($filteredLessons[$week['week_number']][$day['day_of_week']][$key])) {
-                                $filteredLessons[$week['week_number']][$day['day_of_week']][$key] = [
-                                    'time' => $lesson['time'],
-                                    'lesson' => [],
-                                    'location' => $lesson['location'],
-                                    'teacher' => $lesson['teacher'],
-                                    'classes' => [],
-                                    'students' => []
-                                ];
-                            }
-
-                            // Voeg de les toe aan de lijst als deze nog niet bestaat
-                            if (!in_array($lesson['lesson'], $filteredLessons[$week['week_number']][$day['day_of_week']][$key]['lesson'])) {
-                                $filteredLessons[$week['week_number']][$day['day_of_week']][$key]['lesson'][] = $lesson['lesson'];
-                            }
-
-                            // Voeg de klas toe aan de lijst als deze nog niet bestaat
-                            if (!in_array($lesson['class'], $filteredLessons[$week['week_number']][$day['day_of_week']][$key]['classes'])) {
-                                $filteredLessons[$week['week_number']][$day['day_of_week']][$key]['classes'][] = $lesson['class'];
-                            }
-
-                            // Haal de leerlingen op voor de klas
-                            $students = Student::where('class_id', $schedule->class_id)->pluck('user_id')->toArray();
-                            $studentNames = DB::table('users')
-                                ->whereIn('id', $students)
-                                ->get(['firstname', 'lastname'])
-                                ->map(function ($student) {
-                                    return $student->firstname . ' ' . $student->lastname;
-                                })
-                                ->toArray();
-                            $filteredLessons[$week['week_number']][$day['day_of_week']][$key]['students'] = array_merge($filteredLessons[$week['week_number']][$day['day_of_week']][$key]['students'], $studentNames);
+                            $this->groupLessons($filteredLessons, $week['week_number'], $day['day_of_week'], $key, $lesson, $schedule->class_id);
                         }
                     }
                 }
             }
         }
 
-        return view('dashboard.index', compact('filteredLessons'));
+        return $filteredLessons;
+    }
+
+    private function augmentLessonData($lesson, $teacher, $className) {
+        $lesson['class'] = $className;
+        $lesson['teacher'] = strtoupper(substr($teacher->user->firstname, 0, 1)) . '. ' . $teacher->user->lastname;
+
+        return $lesson;
+    }
+
+    private function generateLessonKey($lesson) {
+        return $lesson['time'] . '-' . $lesson['location'] . '-' . $lesson['teacher'];
+    }
+
+    private function groupLessons(&$filteredLessons, $weekNumber, $dayOfWeek, $key, $lesson, $classId) {
+        if (!isset($filteredLessons[$weekNumber][$dayOfWeek][$key])) {
+            $filteredLessons[$weekNumber][$dayOfWeek][$key] = [
+                'time' => $lesson['time'],
+                'lesson' => [],
+                'location' => $lesson['location'],
+                'teacher' => $lesson['teacher'],
+                'classes' => [],
+                'students' => []
+            ];
+        }
+
+        if (!in_array($lesson['lesson'], $filteredLessons[$weekNumber][$dayOfWeek][$key]['lesson'])) {
+            $filteredLessons[$weekNumber][$dayOfWeek][$key]['lesson'][] = $lesson['lesson'];
+        }
+
+        if (!in_array($lesson['class'], $filteredLessons[$weekNumber][$dayOfWeek][$key]['classes'])) {
+            $filteredLessons[$weekNumber][$dayOfWeek][$key]['classes'][] = $lesson['class'];
+        }
+
+        $studentNames = $this->getStudentNamesForClass($classId);
+        $filteredLessons[$weekNumber][$dayOfWeek][$key]['students'] = array_merge($filteredLessons[$weekNumber][$dayOfWeek][$key]['students'], $studentNames);
+    }
+
+    private function getStudentNamesForClass($classId) {
+        $studentIds = Student::where('class_id', $classId)->pluck('user_id')->toArray();
+        return DB::table('users')
+            ->whereIn('id', $studentIds)
+            ->get(['firstname', 'lastname'])
+            ->map(function ($student) {
+                return $student->firstname . ' ' . $student->lastname;
+            })
+            ->toArray();
     }
 }
