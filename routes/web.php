@@ -33,8 +33,12 @@ Route::middleware(['auth', 'verified', FetchSchool::class, CheckUserActivation::
     Route::get('/studiewijzers', [StudyGuideController::class, 'index'])->name('dashboard.studyguide.index');
     Route::get('/studiewijzer/bekijken/{id}', [StudyGuideController::class, 'view'])->name('dashboard.studyguide.view');
     Route::get('/studiewijzer/bewerken/{id}', [StudyGuideController::class, 'edit'])->name('dashboard.studyguide.edit');
+    Route::delete('/studiewijzer/verwijderen/{id}', [StudyGuideController::class, 'verwijder'])->name('dashboard.studyguide.verwijder');
     Route::get('/studiewijzer/toevoegen', [StudyGuideController::class, 'create'])->name('dashboard.studyguide.create');
+    Route::get('/studiewijzer/{id}/huiswerk/aanmaken', [StudyGuideController::class, 'createHomework'])->name('dashboard.studyguide.create_homework');
     Route::post('/studiewijzer/add', [StudyGuideController::class, 'store'])->name('dashboard.studyguide.store');
+    Route::delete('studiewijzer/huiswerk/verwijderen/{id}', [StudyGuideController::class, 'destroy'])->name('dashboard.studyguide.destroy_homework');
+    Route::post('/huiswerk/add', [StudyGuideController::class, 'storeHomework'])->name('dashboard.studyguide.store_homework');
     Route::get('get-classes-by-subject', [StudyGuideController::class, 'getClassesBySubject'])->name('get.classes.by.subject');
     Route::get('get-students-by-class', [StudyGuideController::class, 'getStudentsByClass'])->name('get.students.by.class');
 

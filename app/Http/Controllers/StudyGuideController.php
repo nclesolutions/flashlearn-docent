@@ -8,6 +8,7 @@ use App\Models\StudyGuide;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class StudyGuideController extends Controller
 {
@@ -56,9 +57,27 @@ class StudyGuideController extends Controller
         // Haal huiswerk op dat gerelateerd is aan het vak van deze studiewijzer
         $homeworks = Homework::where('study_guide_id', $id)
             ->where('subject_id', $studyGuide->subject->id)
+            ->orderBy('return_date', 'asc')
             ->get();
 
         return view('dashboard.studyguide.view', compact('studyGuide', 'homeworks'));
+    }
+
+    // Methode voor het verwijderen van studiewijzer
+    public function verwijder($id)
+    {
+        // Haal de studiewijzer op die moet worden verwijderd
+        $studyGuide = StudyGuide::find($id);
+
+        // Controleer of de studiewijzer bestaat
+        if (!$studyGuide) {
+            return redirect()->route('dashboard.studyguide.index')->with('error', 'Studiewijzer niet gevonden.');
+        }
+
+        // Verwijder de studiewijzer
+        $studyGuide->delete();
+
+        return redirect()->route('dashboard.studyguide.index')->with('success', 'Studiewijzer succesvol verwijderd.');
     }
 
     public function edit($id)
@@ -113,6 +132,70 @@ class StudyGuideController extends Controller
             ->get();
 
         return response()->json($students);
+    }
+
+    public function createHomework($id)
+    {
+        $studyGuide = StudyGuide::find($id);
+
+        if (!$studyGuide) {
+            return redirect()->route('dashboard.studyguide.index')->with('error', 'Studiewijzer niet gevonden.');
+        }
+
+        return view('dashboard.studyguide.create_homework', compact('studyGuide'));
+    }
+    public function destroy($id)
+    {
+        // Haal het huiswerk op dat moet worden verwijderd
+        $homework = Homework::find($id);
+
+        // Controleer of het huiswerk bestaat
+        if (!$homework) {
+            return redirect()->back()->with('error', 'Huiswerk niet gevonden.');
+        }
+
+        // Verwijder het huiswerk
+        $homework->delete();
+
+        return redirect()->route('dashboard.studyguide.view', ['id' => $homework->study_guide_id])->with('success', 'Huiswerk succesvol verwijderd.');
+    }
+    public function storeHomework(Request $request)
+    {
+        // Valideer de invoer
+        $validated = $request->validate([
+            'study_guide_id' => 'required|integer|exists:study_guides,id',
+            'name' => 'required|string',
+            'due_date' => 'required|date',
+            'description' => 'required|string',
+        ]);
+
+        // Haal het juiste study guide record op
+        $studyGuide = StudyGuide::find($validated['study_guide_id']);
+
+        // Controleer of de study guide bestaat
+        if (!$studyGuide) {
+            return redirect()->back()->with('error', 'Ongeldige study guide ID.');
+        }
+        $teacher = DB::table('teachers')->where('user_id', Auth::id())->first();
+        if (!$teacher) {
+            return redirect()->back()->with('error', 'Docent niet gevonden.');
+        }
+        $orgId = $teacher->org_id;
+        // Haal subject_id en subject_name op
+        $subjectId = $studyGuide->subject_id;
+        $subjectName = DB::table('subjects')->where('id', $subjectId)->value('name');
+        // Opslaan van nieuw huiswerk
+        $homework = new Homework();
+        $homework->study_guide_id = $validated['study_guide_id'];
+        $homework->subject_id = $subjectId;
+        $homework->subject = $subjectName;
+        $homework->title = $validated['name'];
+        $homework->unique_id = Str::uuid();
+        $homework->return_date = $validated['due_date'];
+        $homework->description = $validated['description'];
+        $homework->org_id = $orgId;  // Toevoegen van org_id
+        $homework->save();
+        return redirect()->route('dashboard.studyguide.view', ['id' => $validated['study_guide_id']])->with('success', 'Huiswerk succesvol aangemaakt.');
     }
 
 

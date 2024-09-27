@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="utf-8">
     @include('includes.meta')
@@ -10,16 +10,18 @@
     <!-- Vendor Stylesheets -->
     <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/plugins/custom/vis-timeline/vis-timeline.bundle.css') }}" rel="stylesheet" type="text/css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.js"></script>
 
     <!-- Global Stylesheets Bundle -->
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 
-    <!-- Custom Styles -->
     <style>
-        /* ... jouw bestaande stijlcode ... */
+        .points-earned {
+            font-size: 24px;
+            color: #4caf50;
+            font-weight: bold;
+            transition: font-size 0.3s ease;
+        }
     </style>
 </head>
 
@@ -38,15 +40,6 @@
         }
         document.documentElement.setAttribute("data-bs-theme", themeMode);
     }
-
-    // Scroll naar de huidige week bij het laden van de pagina
-    function scrollToCurrentWeek() {
-        var currentWeekElement = document.querySelector('.current-week');
-        if (currentWeekElement) {
-            currentWeekElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    }
-    document.addEventListener('DOMContentLoaded', scrollToCurrentWeek);
 </script>
 
 <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
@@ -66,7 +59,7 @@
                                 <li class="breadcrumb-item">
                                     <i class="ki-outline ki-right fs-7 text-gray-700 mx-n1"></i>
                                 </li>
-                                <li class="breadcrumb-item text-white fw-bold lh-1">Studiewijzer Bekijken</li>
+                                <li class="breadcrumb-item text-white fw-bold lh-1">Studiewijzer / {{ $studyGuide->title }}</li>
                             </ul>
                         </div>
                         <div class="d-flex flex-stack flex-wrap flex-lg-nowrap gap-4 gap-lg-10 pt-13 pb-6">
@@ -88,26 +81,75 @@
                             <div id="container">
                                 <div class="card rounded">
                                     <div class="card-header">
-                                        <h3 class="card-title">Studiewijzer voor {{ $studyGuide->title }}</h3>
+                                        <h3 class="card-title">Studiewijzer {{ $studyGuide->title }}</h3>
+                                        <div class="card-toolbar">
+                                            <a href="{{ url('studiewijzer/' . $studyGuide->id . '/huiswerk/aanmaken') }}" class="btn btn-sm btn-primary">
+                                                Nieuw Huiswerk
+                                            </a>
+                                            &nbsp;&nbsp;&nbsp;
+                                            <form action="{{ route('dashboard.studyguide.verwijder', ['id' => $studyGuide->id]) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je deze studiewijzer wilt verwijderen?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <!-- Voeg een disabled attribuut toe als er huiswerkopdrachten zijn -->
+                                                <button type="submit" class="btn btn-sm btn-danger" {{ $homeworks->isNotEmpty() ? 'disabled' : '' }}>Verwijderen</button>
+                                            </form>
+                                        </div>
                                     </div>
                                     <div class="card-body">
                                         <div class="container">
                                             <p><strong>Vak:</strong> {{ $studyGuide->subject->name }}</p>
                                             <p><strong>Klas:</strong> {{ $studyGuide->schoolClass ? $studyGuide->schoolClass->name : 'N/A' }}</p>
+                                            <!-- Maak een lijst met huiswerk, filteren op homework.study_guide_id -->
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Huiswerk agenda -->
-                                @if($homeworks->isEmpty())
-                                <div class="col-12 pt-5">
-                                    <div class="alert alert-info">Geen huiswerk gevonden voor deze studiewijzer.</div>
+                                <!-- Huiswerk kaarten -->
+                                <div class="row pt-5">
+                                    @if($homeworks->isEmpty())
+                                    <div class="col-12">
+                                        <div class="alert alert-warning" role="alert">
+                                            <strong>Geen huiswerk-opdrachten gevonden.</strong> Voeg een nieuwe opdracht toe!
+                                        </div>
+                                    </div>
+                                    @else
+                                    @foreach ($homeworks as $homework)
+                                    <div class="col-md-6 col-lg-4 mb-6">
+                                        <div class="card card-custom rounded gutter-b">
+                                            <div class="card-header pt-3 pb-2">
+                                                <div class="card-title">
+                                                    <i class="ki-outline ki-book-open fs-1 me-2"></i>
+                                                    <h3 class="card-label">{{ $homework->title }}</h3>
+                                                </div>
+                                                <div class="card-toolbar">
+                                                    <form action="{{ route('dashboard.studyguide.destroy_homework', ['id' => $homework->id]) }}" method="POST" onsubmit="return confirm('Weet je zeker dat je dit huiswerk wilt verwijderen?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-sm btn-light">Verwijderen</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                            <div class="card-body py-4">
+                                                <div class="d-flex align-items-center mb-4">
+                                                    <div class="m-0">
+                                                        <div class="d-flex flex-column flex-shrink-0 me-4">
+                                                                    <span class="d-flex align-items-center fs-7 fw-bold text-gray-400 mb-1">
+                                                                        <i class="ki-outline ki-book-open fs-6 text-gray-600 me-2"></i>{{ $homework->subject }}
+                                                                    </span>
+                                                            <span class="d-flex align-items-center fs-7 fw-bold text-gray-400 mb-1">
+                                                                        <i class="ki-outline ki-calendar-2 fs-6 text-gray-600 me-2"></i>{{ \Carbon\Carbon::parse($homework->return_date)->translatedFormat('d F Y') }}
+                                                                    </span>
+                                                            <span class="d-flex align-items-center fs-7 fw-bold text-gray-400 mb-1">
+                                                                        <i class="ki-outline ki-bookmark fs-6 text-gray-600 me-2"></i>{{ $homework->description }}
+                                                                    </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                    @endif
                                 </div>
-                                @else
-                                <div id="calendar-container">
-                                    <div id="kt_docs_fullcalendar_populated"></div>
-                                </div>
-                                @endif
                             </div>
                         </div>
                         @include('includes.footer')
@@ -117,59 +159,6 @@
         </div>
     </div>
 </div>
-
-<script>
-    // Voorbeeld van huiswerkdata als een array van objecten
-    var homeworks = [
-    @foreach($homeworks as $homework)
-    {
-        title: '{{ $homework->title }}',
-            start: '{{ $homework->return_date }}',
-        description: '{{ $homework->description }}'
-    },
-    @endforeach
-    ];
-
-    // Functie om huiswerk op te zetten in FullCalendar
-    function setupCalendar(homeworks) {
-        var todayDate = moment().startOf('day');
-        var YM = todayDate.format('YYYY-MM');
-        var calendarEl = document.getElementById('kt_docs_fullcalendar_populated');
-        var calendarEvents = homeworks.map(function(homework) {
-            return {
-                title: homework.title,
-                start: homework.start,
-                description: homework.description,
-                className: 'fc-event-primary' // Voeg custom classes toe zoals nodig
-            };
-        });
-
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
-            },
-            initialView: 'dayGridMonth',
-            events: calendarEvents,
-            eventContent: function(info) {
-                var element = info.el;
-                if (info.event.extendedProps && info.event.extendedProps.description) {
-                    var descriptionEl = document.createElement('div');
-                    descriptionEl.innerHTML = info.event.extendedProps.description;
-                    element.appendChild(descriptionEl);
-                }
-            }
-        });
-
-        calendar.render();
-    }
-
-    // Initialiseer de kalender met de huiswerkdata
-    document.addEventListener('DOMContentLoaded', function() {
-        setupCalendar(homeworks);
-    });
-</script>
 
 <!-- JavaScript -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
