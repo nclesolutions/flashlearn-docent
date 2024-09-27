@@ -109,11 +109,13 @@
                                 </div>
                                 @endforeach
 
+                                @foreach ($groupedStudyGuides as $subjectId => $studyGuides)
                                 @if($studyGuides->isEmpty())
                                 <div class="alert alert-warning" role="alert">
                                     <strong>Geen studiewijzers gevonden.</strong> Voeg een nieuwe studiewijzer toe!
                                 </div>
                                 @endif
+                                @endforeach
 
                             </div>
                         </div>

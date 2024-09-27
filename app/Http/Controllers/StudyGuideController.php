@@ -42,6 +42,11 @@ class StudyGuideController extends Controller
             return $guide;
         })->groupBy('subject_id');
 
+        // Controleer of er study guides zijn gevonden en wat de resultaten zijn
+        if ($studyGuides->isEmpty()) {
+                dd("No study guides found for subject ids: " . implode(', ', $subjectIds->toArray()));
+        }
+
         return view('dashboard.studyguide.index', compact('groupedStudyGuides'));
     }
     public function view($id)
