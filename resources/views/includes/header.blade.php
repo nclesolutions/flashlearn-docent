@@ -67,18 +67,6 @@
                         <div class="menu-item px-5">
                             <a href="/account/profiel" class="menu-link px-5">Mijn Profiel</a>
                         </div>
-                        @if(session('orgName'))
-                            <div class="menu-item px-5">
-                                <a href="/huiswerk" class="menu-link px-5">
-                                    <span class="menu-text">Huiswerk</span>
-                                </a>
-                            </div>
-                            <div class="menu-item px-5">
-                                <a href="/afwezigheid" class="menu-link px-5">
-                                    <span class="menu-text">Afwezigheid</span>
-                                </a>
-                            </div>
-                        @endif
                         <div class="separator my-2"></div>
                         <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="left-start" data-kt-menu-offset="-15px, 0">
                             <a href="#" class="menu-link px-5">
