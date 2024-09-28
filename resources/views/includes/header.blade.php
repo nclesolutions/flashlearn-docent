@@ -33,28 +33,10 @@
                                 <span class="menu-arrow d-lg-none"></span>
                             </a>
                         </div>
-                        <div class="{{ checkActivePage(['cijfers', 'cijfers/*']) }} menu-item menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
-                            <a class="menu-link" href="{{ url('/cijfers') }}">
-                                <span class="menu-title">Cijfers</span>
-                                <span class="menu-arrow d-lg-none"></span>
-                            </a>
-                        </div>
                     @endif
                 </div>
             </div>
             <div class="app-navbar flex-shrink-0">
-                <?php
-                $allowed_roles = ['Gebruiker', 'Redactie', 'Klantenservice', 'Technische Medewerker', 'Teamleider', 'Bestuur'];
-                ?>
-                @if(in_array(Auth::user()->role, $allowed_roles))
-                    <div class="app-navbar-item ms-1 ms-lg-5">
-                        <a href="https://mijn.ncle.nl">
-                            <div class="btn btn-icon btn-custom btn-active-color-primary w-35px h-35px w-md-40px h-md-40px">
-                                <i class="ki-outline ki-setting-2 fs-1"></i>
-                            </div>
-                        </a>
-                    </div>
-                @endif
                 <div class="app-navbar-item ms-5" id="kt_header_user_menu_toggle">
                     <div class="cursor-pointer symbol symbol-35px symbol-md-40px"
                          data-kt-menu-trigger="{default: 'click', lg: 'hover'}"
