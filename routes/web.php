@@ -2,8 +2,6 @@
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\GradeController;
-use App\Http\Controllers\NoteController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\StudentController;
@@ -19,16 +17,6 @@ Route::middleware(['auth', 'verified', FetchSchool::class, CheckUserActivation::
 
     Route::get('/leerlingen', [StudentController::class, 'index'])->name('dashboard.student.index');
     Route::get('/leerling/bekijken/{id}', [StudentController::class, 'view'])->name('dashboard.student.view');
-
-    Route::get('/cijfers', [GradeController::class, 'index'])->name('dashboard.homework.index');
-    Route::get('/cijfer/toevoegen', [GradeController::class, 'create'])->name('dashboard.homework.view');
-    Route::get('/cijfer/bekijken/{id}', [GradeController::class, 'view'])->name('dashboard.homework.view');
-    Route::get('/cijfer/bewerken/{id}', [GradeController::class, 'edit'])->name('dashboard.homework.view');
-
-    Route::get('/notities', [NoteController::class, 'index'])->name('dashboard.homework.index');
-    Route::get('/notities/toevoegen', [NoteController::class, 'create'])->name('dashboard.homework.view');
-    Route::get('/notities/bekijken/{id}', [NoteController::class, 'view'])->name('dashboard.homework.view');
-    Route::get('/notities/bewerken/{id}', [NoteController::class, 'edit'])->name('dashboard.homework.view');
 
     Route::get('/studiewijzers', [StudyGuideController::class, 'index'])->name('dashboard.studyguide.index');
     Route::get('/studiewijzer/bekijken/{id}', [StudyGuideController::class, 'view'])->name('dashboard.studyguide.view');

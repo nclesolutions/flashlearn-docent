@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Schedule;
@@ -19,8 +20,8 @@ class DashboardController extends Controller
 
         $userId = Auth::id();
         $teacher = Teacher::where('user_id', $userId)->first();
-
         $orgId = $teacher->org_id;
+
         $schedules = Schedule::where('school_id', $orgId)->get();
         $filteredLessons = $this->getFilteredLessons($schedules, $teacher);
 
@@ -29,18 +30,22 @@ class DashboardController extends Controller
 
     private function getFilteredLessons($schedules, $teacher) {
         $filteredLessons = [];
+        $currentWeekNumber = date('W'); // Haal het huidige weeknummer op
 
         foreach ($schedules as $schedule) {
             $className = DB::table('classes')->where('id', $schedule->class_id)->value('name');
             $roosters = json_decode($schedule->data, true);
 
             foreach ($roosters['weeks'] as $week) {
+                if ($week['week_number'] != $currentWeekNumber) {
+                    continue; // Alleen lessen van het huidige weeknummer behouden
+                }
+
                 foreach ($week['days'] as $day) {
                     foreach ($day['schedule'] as $lesson) {
                         if ($lesson['teacher'] == $teacher->id) {
                             $lesson = $this->augmentLessonData($lesson, $teacher, $className);
                             $key = $this->generateLessonKey($lesson);
-
                             $this->groupLessons($filteredLessons, $week['week_number'], $day['day_of_week'], $key, $lesson, $schedule->class_id);
                         }
                     }
@@ -54,7 +59,6 @@ class DashboardController extends Controller
     private function augmentLessonData($lesson, $teacher, $className) {
         $lesson['class'] = $className;
         $lesson['teacher'] = strtoupper(substr($teacher->user->firstname, 0, 1)) . '. ' . $teacher->user->lastname;
-
         return $lesson;
     }
 
